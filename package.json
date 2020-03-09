@@ -1,0 +1,40 @@
+{
+  "name": "mazr",
+  "version": "0.1.0",
+  "scripts": {
+    "clear": "rimraf ./dist",
+    "prestart": "npm run clear",
+    "start": "concurrently \"npm run re:watch\" \"npm run server\"",
+    "build": "bsb -clean-world && bsb -make-world && webpack -p",
+    "re:watch": "bsb -make-world -w -ws _ ",
+    "re:clean": "bsb -clean-world",
+    "server": "cross-env NODE_ENV=development webpack-dev-server"
+  },
+  "keywords": [
+    "BuckleScript",
+    "ReasonReact",
+    "reason-react"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bs-css": "^12.0.1",
+    "bs-css-emotion": "^1.0.1",
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
+    "reason-react": ">=0.7.0",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "@babel/preset-env": "^7.8.6",
+    "babel-loader": "^8.0.6",
+    "bs-platform": "^7.0.1",
+    "concurrently": "^5.1.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "cross-env": "^7.0.0",
+    "rimraf": "^3.0.2",
+    "webpack-dev-server": "^3.10.3"
+  }
+}
