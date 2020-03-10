@@ -38,6 +38,5 @@ let make = (~spawn: Types.mapTile, ~tiles) => {
     setMobs(mobs => {Belt.Array.keep(mobs, mob => {mob.id !== id})});
   };
 
-  Belt.Array.mapWithIndex(mobs, (index, mob) => {<Mobs_Generic key={string_of_int(index)} mob tiles despawn />})
-  ->React.array;
+  Belt.Array.map(mobs, mob => {<Mobs_Generic key={Js.Float.toString(mob.id)} mob tiles despawn />})->React.array;
 };
