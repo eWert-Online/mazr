@@ -28,7 +28,7 @@ let make = (~spawn: Types.mapTile, ~tiles) => {
             Belt.Array.concat(mobs, [|newMob|]);
           })
         },
-        8000,
+        4000,
       );
 
     Some(() => Js.Global.clearInterval(timer));
