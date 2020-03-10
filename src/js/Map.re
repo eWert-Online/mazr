@@ -134,7 +134,7 @@ let make = () => {
             Js.Global.setInterval(
               () => {
                 setMobs(mobs => {
-                  let newMob = Mobs_Skeleton.make(~coordinates=start.coordinates);
+                  let newMob = Mobs_Skeleton.init(~coordinates=start.coordinates);
                   Belt.Array.concat(mobs, [|newMob|]);
                 })
               },

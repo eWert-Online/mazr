@@ -9,21 +9,32 @@ module Styles = {
       width(Grid.tileSize->pxFloat),
       display(block),
       margin(auto),
+      overflow(hidden),
       transitionProperty("all"),
       transitionTimingFunction(linear),
-      backgroundPosition4(~x=`left, ~y=`top, ~offsetX=0->px, ~offsetY=0->px),
-      backgroundRepeat(noRepeat),
       selector("&::before", [contentRule(`text("")), display(block), paddingTop(100.0->pct)]),
     ]);
 };
 
+type positions = {
+  prev: Grid.t,
+  current: Grid.t,
+};
+
 [@react.component]
 let make = (~mob: Types.mob, ~tiles: array(array(Mazr.Types.mapTile))) => {
-  let mobType = Css.(style([backgroundImage(url("/images/characters/skeleton.png"))]));
-
-  let (coordinate, setCoordinate) =
+  let (positions, setPositions) =
     React.useState(() => {
-      let coord: Grid.t = {x: mob.coordinates.x, y: mob.coordinates.y};
+      let coord: positions = {
+        prev: {
+          x: mob.coordinates.x,
+          y: mob.coordinates.y,
+        },
+        current: {
+          x: mob.coordinates.x,
+          y: mob.coordinates.y,
+        },
+      };
       coord;
     });
 
@@ -31,20 +42,18 @@ let make = (~mob: Types.mob, ~tiles: array(array(Mazr.Types.mapTile))) => {
 
   React.useEffect3(
     () => {
-      let currentTile = tiles[coordinate.x][coordinate.y];
+      let currentTile = tiles[positions.current.x][positions.current.y];
       let id =
         Js.Global.setTimeout(
           () => {
-            switch (Array.length(currentTile.nextPath)) {
-            | 1 => setCoordinate(_ => {currentTile.nextPath[0]})
-            | 2 =>
-              if (hasBeacon) {
-                setCoordinate(_ => {currentTile.nextPath[1]});
+            let nextPathLength = Array.length(currentTile.nextPath);
+            if (nextPathLength > 0) {
+              if (hasBeacon && nextPathLength === 2) {
+                setPositions(positions => {prev: positions.current, current: currentTile.nextPath[1]});
               } else {
-                setCoordinate(_ => {currentTile.nextPath[0]});
-              }
-            | _ => ()
-            }
+                setPositions(positions => {prev: positions.current, current: currentTile.nextPath[0]});
+              };
+            };
           },
           mob.speed,
         );
@@ -62,7 +71,7 @@ let make = (~mob: Types.mob, ~tiles: array(array(Mazr.Types.mapTile))) => {
       };
       Some(() => {Js.Global.clearTimeout(id)});
     },
-    (coordinate.x, coordinate.y, hasBeacon),
+    (positions.current.x, positions.current.y, hasBeacon),
   );
 
   let calculatedStyle =
@@ -70,14 +79,29 @@ let make = (~mob: Types.mob, ~tiles: array(array(Mazr.Types.mapTile))) => {
       style([
         transforms([
           translate(
-            (float_of_int(coordinate.x) *. Grid.tileSize)->pxFloat,
-            (float_of_int(coordinate.y) *. Grid.tileSize)->pxFloat,
+            (float_of_int(positions.current.x) *. Grid.tileSize)->pxFloat,
+            (float_of_int(positions.current.y) *. Grid.tileSize)->pxFloat,
           ),
-          translateY((-33.0)->pct),
+          translateY((-30.0)->pct),
         ]),
         transitionDuration(mob.speed),
       ])
     );
 
-  <div className={Css.merge([Styles.mob, mobType, calculatedStyle])} />;
+  <div className={Css.merge([Styles.mob, calculatedStyle])}>
+    {switch (mob.typ) {
+     | Skeleton =>
+       <Mobs_Skeleton
+         animation={
+           switch (positions.current.x, positions.current.y, positions.prev.x, positions.prev.y) {
+           | (currentX, _currentY, prevX, _prevY) when currentX < prevX => Mobs_Skeleton.Animations.walkLeft // LEFT
+           | (currentX, _currentY, prevX, _prevY) when currentX > prevX => Mobs_Skeleton.Animations.walkRight // RIGHT
+           | (_currentX, currentY, _prevX, prevY) when currentY > prevY => Mobs_Skeleton.Animations.walkDown // DOWN
+           | (_currentX, currentY, _prevX, prevY) when currentY < prevY => Mobs_Skeleton.Animations.walkUp // UP
+           | _ => ""
+           }
+         }
+       />
+     }}
+  </div>;
 };
