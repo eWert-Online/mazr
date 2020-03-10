@@ -30,7 +30,10 @@ let make = () => {
                 y,
               },
               state: Empty,
-              nextPath: [||],
+              nextPath: {
+                toBeacon: None,
+                toEnd: None,
+              },
               objects:
                 switch (Random.int(5)) {
                 | 0 =>
@@ -48,18 +51,21 @@ let make = () => {
       )
     });
 
-  let (mobs, setMobs) =
-    React.useState(() => {
-      let mobsArray: array(Types.mob) = [||];
-      mobsArray;
-    });
-
   React.useEffect5(
     () => {
       needToRecalculatePath
         ? {
           setTiles(tiles => {
-            Belt.Array.map(tiles, row => {Belt.Array.map(row, tile => {{...tile, state: Empty, nextPath: [||]}})})
+            Belt.Array.map(tiles, row => {
+              Belt.Array.map(row, tile => {
+                                            ...tile,
+                                            state: Empty,
+                                            nextPath: {
+                                              toBeacon: None,
+                                              toEnd: None,
+                                            },
+                                          })
+            })
           });
 
           let pathToBeacon =
@@ -94,21 +100,46 @@ let make = () => {
             | _ => []
             };
 
-          let completePath = List.append(pathToBeacon, pathToEnd);
-
           setTiles(tiles => {
             let newTiles = Belt.Array.copy(tiles);
             Belt.List.forEachWithIndex(
-              completePath,
+              pathToBeacon,
               (index, pathTile) => {
-                let nextPath: array(Grid.t) =
-                  switch (Belt.List.get(completePath, index + 1)) {
-                  | Some(tile) => [|{x: tile.coordinates.x, y: tile.coordinates.y}|]
-                  | None => [||]
+                let nextPath: option(Grid.t) =
+                  switch (Belt.List.get(pathToBeacon, index + 1)) {
+                  | Some(tile) => Some(tile.coordinates)
+                  | None => None
                   };
                 let tile = newTiles[pathTile.coordinates.x][pathTile.coordinates.y];
-                let tile = {...tile, state: Path, nextPath: Array.concat([tile.nextPath, nextPath])};
-                Js.log(tile);
+                let tile = {
+                  ...tile,
+                  state: Path,
+                  nextPath: {
+                    toBeacon: nextPath,
+                    toEnd: tile.nextPath.toEnd,
+                  },
+                };
+                newTiles[tile.coordinates.x][tile.coordinates.y] = tile;
+              },
+            );
+
+            Belt.List.forEachWithIndex(
+              pathToEnd,
+              (index, pathTile) => {
+                let nextPath: option(Grid.t) =
+                  switch (Belt.List.get(pathToEnd, index + 1)) {
+                  | Some(tile) => Some(tile.coordinates)
+                  | None => None
+                  };
+                let tile = newTiles[pathTile.coordinates.x][pathTile.coordinates.y];
+                let tile = {
+                  ...tile,
+                  state: Path,
+                  nextPath: {
+                    toBeacon: tile.nextPath.toBeacon,
+                    toEnd: nextPath,
+                  },
+                };
                 newTiles[tile.coordinates.x][tile.coordinates.y] = tile;
               },
             );
@@ -123,33 +154,6 @@ let make = () => {
       None;
     },
     (context.startNode, context.beacon, context.endNode, tiles, needToRecalculatePath),
-  );
-
-  React.useEffect1(
-    () => {
-      let timer =
-        switch (hasPath, context.startNode, context.beacon, context.endNode) {
-        | (true, Some(start), Some(_beacon), Some(_destination)) =>
-          Some(
-            Js.Global.setInterval(
-              () => {
-                setMobs(mobs => {
-                  let newMob = Mobs_Skeleton.init(~coordinates=start.coordinates);
-                  Belt.Array.concat(mobs, [|newMob|]);
-                })
-              },
-              8000,
-            ),
-          )
-        | _ => None
-        };
-
-      switch (timer) {
-      | Some(timerId) => Some(() => Js.Global.clearInterval(timerId))
-      | None => None
-      };
-    },
-    [|hasPath|],
   );
 
   let setTileState = (~tile: Types.mapTile, ~objects) => {
@@ -181,6 +185,9 @@ let make = () => {
        </div>
      })
      ->React.array}
-    {Belt.Array.mapWithIndex(mobs, (index, mob) => {<Mob key={string_of_int(index)} mob tiles />})->React.array}
+    {switch (hasPath, context.startNode) {
+     | (true, Some(spawn)) => <Mobs_Mobs spawn tiles />
+     | _ => React.null
+     }}
   </div>;
 };
