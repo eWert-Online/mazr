@@ -19,20 +19,15 @@ let make = (~spawn: Types.mapTile, ~tiles) => {
       mobsArray;
     });
 
-  React.useEffect(() => {
-    let timer =
-      Js.Global.setInterval(
-        () => {
-          setMobs(mobs => {
-            let newMob = Mobs_Skeleton.init(~coordinates=spawn.coordinates);
-            Belt.Array.concat(mobs, [|newMob|]);
-          })
-        },
-        4000,
-      );
-
-    Some(() => Js.Global.clearInterval(timer));
-  });
+  Hooks.useInterval(
+    () => {
+      setMobs(mobs => {
+        let newMob = Mobs_Skeleton.init(~coordinates=spawn.coordinates);
+        Belt.Array.concat(mobs, [|newMob|]);
+      })
+    },
+    4000,
+  );
 
   let despawn = (~id) => {
     setMobs(mobs => {Belt.Array.keep(mobs, mob => {mob.id !== id})});
