@@ -75,6 +75,7 @@ let make = (~tiles, ~tile: Types.mapTile, ~setObjects: Types.gameObject => unit)
           Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
         | (Empty, Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
 
+        // Junctions
         | (Empty, Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_top.png"))]))
         | (Path, Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_right.png"))]))
         | (Path, Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_bottom.png"))]))
@@ -84,6 +85,132 @@ let make = (~tiles, ~tile: Types.mapTile, ~setObjects: Types.gameObject => unit)
         | (Path, Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/filled.png"))]))
         // TODO: Surrounded by Empty Fields
         | (Empty, Empty, Empty, Empty) => ""
+        }
+      | (None, Some(east), Some(south), Some(west)) =>
+        switch (east.state, south.state, west.state) {
+        // Endings
+        | (Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+        | (Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+        | (Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+        // Straight Paths
+        | (Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/horizontal.png"))]))
+
+        // Turns
+        | (Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
+        | (Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
+
+        // Junctions
+        | (Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_top.png"))]))
+        // TODO: Surrounded by Empty Fields
+        | (Empty, Empty, Empty) => ""
+        }
+      | (Some(north), None, Some(south), Some(west)) =>
+        switch (north.state, south.state, west.state) {
+        // Endings
+        | (Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+        | (Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+        | (Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+        // Straight Paths
+        | (Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/vertical.png"))]))
+
+        // Turns
+        | (Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
+        | (Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
+
+        // Junctions
+        | (Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_right.png"))]))
+
+        // TODO: Surrounded by Empty Fields
+        | (Empty, Empty, Empty) => ""
+        }
+      | (Some(north), Some(east), None, Some(west)) =>
+        switch (north.state, east.state, west.state) {
+        // Endings
+        | (Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+        | (Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+        | (Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+        // Straight Paths
+        | (Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/horizontal.png"))]))
+
+        // Turns
+        | (Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
+        | (Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
+
+        // Junctions
+        | (Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_bottom.png"))]))
+
+        // TODO: Surrounded by Empty Fields
+        | (Empty, Empty, Empty) => ""
+        }
+      | (Some(north), Some(east), Some(south), None) =>
+        switch (north.state, east.state, south.state) {
+        // Endings
+        | (Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+        | (Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+        | (Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+
+        // Straight Paths
+        | (Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/vertical.png"))]))
+
+        // Turns
+        | (Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
+        | (Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
+
+        // Junctions
+        | (Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_left.png"))]))
+
+        // TODO: Surrounded by Empty Fields
+        | (Empty, Empty, Empty) => ""
+        }
+      | (Some(north), None, None, Some(west)) =>
+        switch (north.state, west.state) {
+        // Endings
+        | (Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+        | (Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+        // Turns
+        | (Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
+
+        // TODO: Surrounded by Empty Fields
+        | (Empty, Empty) => ""
+        }
+      | (Some(north), Some(east), None, None) =>
+        switch (north.state, east.state) {
+        // Endings
+        | (Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+        | (Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+        // Turns
+        | (Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
+
+        // TODO: Surrounded by Empty Fields
+        | (Empty, Empty) => ""
+        }
+      | (None, Some(east), Some(south), None) =>
+        switch (east.state, south.state) {
+        // Endings
+        | (Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+        | (Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+
+        // Turns
+        | (Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
+
+        // TODO: Surrounded by Empty Fields
+        | (Empty, Empty) => ""
+        }
+      | (None, None, Some(south), Some(west)) =>
+        switch (south.state, west.state) {
+        // Endings
+        | (Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+        | (Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+        // Turns
+        | (Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
+
+        // TODO: Surrounded by Empty Fields
+        | (Empty, Empty) => ""
         }
       | _ => Css.(style([backgroundImage(url("/images/path/dirt/filled.png"))]))
       };
