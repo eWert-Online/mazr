@@ -1,21 +1,15 @@
 module Styles = {
   open Css;
 
-  let toolbar = style([display(`flex), alignItems(center), padding(15->px), flexGrow(1.0)]);
-  let button =
+  let toolbar =
     style([
-      height(40->px),
-      width(40->px),
+      height(80->px),
+      flexGrow(1.0),
+      alignSelf(center),
       display(`flex),
       alignItems(center),
       justifyContent(center),
-      backgroundColor(transparent),
-      borderStyle(none),
-      marginRight(15->px),
-      cursor(`pointer),
-      backgroundImage(url("/images/ui/sign.png")),
-      backgroundRepeat(noRepeat),
-      backgroundSize(cover),
+      padding2(~v=15->px, ~h=30->px),
     ]);
 };
 
@@ -28,33 +22,68 @@ let make = () => {
   };
 
   <div className=Styles.toolbar>
-    <button
-      className={Css.merge([
-        Styles.button,
-        Css.(
-          style([
-            switch (context.selectedElement) {
-            | Building(Tree(DarkGreen)) => backgroundImage(url("/images/ui/sign_tree_active.png"))
-            | _ => backgroundImage(url("/images/ui/sign_tree.png"))
-            },
-          ])
-        ),
-      ])}
-      onClick={_ => selectElement(Types.Building(Tree(DarkGreen)))}
-    />
-    <button
-      className={Css.merge([
-        Styles.button,
-        Css.(
-          style([
-            switch (context.selectedElement) {
-            | Sell => backgroundImage(url("/images/ui/sign_sell_active.png"))
-            | _ => backgroundImage(url("/images/ui/sign_sell.png"))
-            },
-          ])
-        ),
-      ])}
-      onClick={_ => selectElement(Types.Sell)}
-    />
+    {switch (context.startNode, context.beacon, context.endNode) {
+     | (None, None, None) =>
+       <UiButton
+         active={
+           switch (context.startNode) {
+           | Some(_) => false
+           | _ => true
+           }
+         }
+         icon="/images/objects/hole.png"
+         onClick={_ => ()}>
+         "Startpunkt"->React.string
+       </UiButton>
+     | (Some(_), None, None) =>
+       <UiButton
+         active={
+           switch (context.beacon) {
+           | Some(_) => false
+           | _ => true
+           }
+         }
+         icon="/images/objects/key.png"
+         onClick={_ => ()}>
+         "Wegpunkt"->React.string
+       </UiButton>
+     | (Some(_), Some(_), None) =>
+       <UiButton
+         active={
+           switch (context.endNode) {
+           | Some(_) => false
+           | _ => true
+           }
+         }
+         icon="/images/objects/chest.png"
+         onClick={_ => ()}>
+         "Zielpunkt"->React.string
+       </UiButton>
+     | _ =>
+       <React.Fragment>
+         <UiButton
+           active={
+             switch (context.selectedElement) {
+             | Types.Building(Tree(DarkGreen)) => true
+             | _ => false
+             }
+           }
+           icon="/images/objects/tree_darkgreen.png"
+           onClick={_ => selectElement(Types.Building(Tree(DarkGreen)))}>
+           "Baum"->React.string
+         </UiButton>
+         <UiButton
+           active={
+             switch (context.selectedElement) {
+             | Sell => true
+             | _ => false
+             }
+           }
+           icon="/images/objects/gold.png"
+           onClick={_ => selectElement(Types.Sell)}>
+           "Verkaufen"->React.string
+         </UiButton>
+       </React.Fragment>
+     }}
   </div>;
 };

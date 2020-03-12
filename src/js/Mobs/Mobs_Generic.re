@@ -6,7 +6,7 @@ module Styles = {
       position(absolute),
       top(0->px),
       left(0->px),
-      width(Grid.tileSize->pxFloat),
+      unsafe("width", "calc(100% / " ++ string_of_int(Grid.width) ++ ")"),
       display(block),
       margin(auto),
       overflow(hidden),

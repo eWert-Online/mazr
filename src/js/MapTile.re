@@ -214,12 +214,7 @@ let make = (~tiles, ~tile: Types.mapTile, ~setObjects: Types.gameObject => unit)
         }
       | _ => Css.(style([backgroundImage(url("/images/path/dirt/filled.png"))]))
       };
-    | Empty =>
-      let neighbours = Pathfinder.getNeighbours(~tiles, ~tile);
-      switch (neighbours[2]) {
-      | None => Css.(style([backgroundImage(url("/images/edge.png"))]))
-      | _ => ""
-      };
+    | Empty => ""
     };
 
   <button className={Css.merge([Styles.mapTile, stateStyle])} onClick=handleStateChange>

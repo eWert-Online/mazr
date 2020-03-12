@@ -6,7 +6,7 @@ module Styles = {
     style([
       position(relative),
       display(block),
-      width(Grid.tileSize->pxFloat),
+      unsafe("width", "calc(100% / " ++ string_of_int(Grid.width) ++ ")"),
       selector("&::before", [contentRule(`text("")), display(block), paddingTop(100.0->pct)]),
     ]);
 };

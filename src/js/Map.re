@@ -1,12 +1,20 @@
 module Styles = {
   open Css;
 
-  let map = style([display(`flex), flexWrap(nowrap), alignItems(center), justifyContent(center)]);
+  let map =
+    style([
+      display(`flex),
+      flexWrap(nowrap),
+      alignItems(center),
+      justifyContent(center),
+      border(5->px, solid, hex("fcfcfc")),
+    ]);
+  let gridColumn = style([flexGrow(1.0)]);
   let gridCell =
     style([
       position(relative),
       display(block),
-      width(Grid.tileSize->pxFloat),
+      width(100.0->pct),
       selector("&::before", [contentRule(`text("")), display(block), paddingTop(100.0->pct)]),
     ]);
 };
@@ -173,7 +181,7 @@ let make = () => {
 
   <div className=Styles.map>
     {Belt.Array.mapWithIndex(Grid.grid, (x, row) => {
-       <div key={string_of_int(x)}>
+       <div className=Styles.gridColumn key={string_of_int(x)}>
          {row
           ->Belt.Array.mapWithIndex((y, _column) => {
               let tile = tiles[x][y];
