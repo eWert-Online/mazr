@@ -3,6 +3,7 @@ module Styles = {
 
   let map =
     style([
+      position(relative),
       display(`flex),
       flexWrap(nowrap),
       alignItems(center),
