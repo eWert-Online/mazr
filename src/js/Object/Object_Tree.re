@@ -12,5 +12,5 @@ let make = (~treeType: t) => {
     | Trunk => Css.(style([backgroundImage(url("/images/objects/tree_trunk.png"))]))
     };
 
-  <div className={Css.merge([Objects_Generic.Styles.gameObject, treeType])} />;
+  <div className={Css.merge([Object_Styles.gameObject, treeType])} />;
 };

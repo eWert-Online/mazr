@@ -12,5 +12,5 @@ let make = (~waypointType: t) => {
     | EndNode => Css.(style([backgroundImage(url("/images/objects/chest.png"))]))
     };
 
-  <div className={Css.merge([Objects_Generic.Styles.gameObject, waypointType])} />;
+  <div className={Css.merge([Object_Styles.gameObject, waypointType])} />;
 };

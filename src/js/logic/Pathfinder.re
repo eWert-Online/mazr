@@ -1,15 +1,15 @@
-let getDistance = (nodeA: Types.mapTile, nodeB: Types.mapTile) => {
+let getDistance = (nodeA: Types.Grid.tile, nodeB: Types.Grid.tile) => {
   abs(nodeA.coordinates.x - nodeB.coordinates.x) + abs(nodeA.coordinates.y - nodeB.coordinates.y);
 };
 
-let isObstacle = (~tile: Types.mapTile) => {
-  switch (tile.objects) {
+let isObstacle = (~tile: Types.Grid.tile) => {
+  switch (tile.entity) {
   | Tree(_) => true
   | _ => false
   };
 };
 
-let getNeighbours = (~tiles: array(array(Types.mapTile)), ~tile: Types.mapTile) => {
+let getNeighbours = (~tiles: array(array(Types.Grid.tile)), ~tile: Types.Grid.tile) => {
   let north =
     if (tile.coordinates.y > 0) {
       Some(tiles[tile.coordinates.x][tile.coordinates.y - 1]);
@@ -17,7 +17,7 @@ let getNeighbours = (~tiles: array(array(Types.mapTile)), ~tile: Types.mapTile) 
       None;
     };
   let east =
-    if (tile.coordinates.x < Grid.width - 1) {
+    if (tile.coordinates.x < Settings.map_width - 1) {
       Some(tiles[tile.coordinates.x + 1][tile.coordinates.y]);
     } else {
       None;
@@ -29,7 +29,7 @@ let getNeighbours = (~tiles: array(array(Types.mapTile)), ~tile: Types.mapTile) 
       None;
     };
   let south =
-    if (tile.coordinates.y < Grid.height - 1) {
+    if (tile.coordinates.y < Settings.map_height - 1) {
       Some(tiles[tile.coordinates.x][tile.coordinates.y + 1]);
     } else {
       None;
@@ -38,26 +38,26 @@ let getNeighbours = (~tiles: array(array(Types.mapTile)), ~tile: Types.mapTile) 
   [|north, east, south, west|];
 };
 
-let find = (~tiles: array(array(Types.mapTile)), ~startTile: Types.mapTile, ~endTile: Types.mapTile) => {
+let find = (~tiles: array(array(Types.Grid.tile)), ~startTile: Types.Grid.tile, ~endTile: Types.Grid.tile) => {
   // parent holds a link to the previous node in the path.
   // Used at the end for reconstructing the route
-  let parent = Array.make_matrix(Grid.width, Grid.height, None);
+  let parent = Array.make_matrix(Settings.map_width, Settings.map_height, None);
 
   // distanceCost holds the distance to any node taking the best known path so far.
   // Better paths replace worse ones as we find them.
   // We start with all distanceCosts at max_int
-  let distanceCost = Array.make_matrix(Grid.width, Grid.height, max_int);
+  let distanceCost = Array.make_matrix(Settings.map_width, Settings.map_height, max_int);
 
   // remainingCost holds the distance from any node to the end Node.
   // We start with all remainingCosts at 0
-  let remainingCost = Array.make_matrix(Grid.width, Grid.height, 0);
+  let remainingCost = Array.make_matrix(Settings.map_width, Settings.map_height, 0);
 
   // openSet holds all the values, which are currently evaluated
   let openSet = ref([||]);
 
   // closedSet holds true / false on whether a node has been seen already.
   // Used to stop us returning to nodes multiple times
-  let closedSet = Array.make_matrix(Grid.width, Grid.height, false);
+  let closedSet = Array.make_matrix(Settings.map_width, Settings.map_height, false);
 
   // To begin, we set the distance to the start to zero (we're there) and add it into the unvisited queue
   distanceCost[startTile.coordinates.x][startTile.coordinates.y] = 0;
@@ -91,7 +91,7 @@ let find = (~tiles: array(array(Types.mapTile)), ~startTile: Types.mapTile, ~end
     if (current.coordinates.x === endTile.coordinates.x && current.coordinates.y === endTile.coordinates.y) {
       // We want to reconstruct the path.
       // We start at end, and then go prev[end] and follow all the prev[] links until we're back at the start
-      let rec getPath = (pathSegment: Types.mapTile) => {
+      let rec getPath = (pathSegment: Types.Grid.tile) => {
         let nextParent = parent[pathSegment.coordinates.x][pathSegment.coordinates.y];
         [
           pathSegment,

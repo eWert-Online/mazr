@@ -22,207 +22,185 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~tiles, ~tile: Types.mapTile, ~setObjects: Types.gameObject => unit) => {
-  let context = React.useContext(GameContext.context);
-
-  let handleStateChange = _event => {
-    let newState =
-      switch (context.selectedElement) {
-      | Sell =>
-        switch (tile.objects) {
-        | Waypoint(waypoint) => Types.Waypoint(waypoint)
-        | _ => Types.None
-        }
-      | Building(building) =>
-        switch (context.startNode, context.beacon, context.endNode) {
-        | (None, _, _) => Waypoint(StartNode)
-        | (Some(_), None, _) => Waypoint(Beacon)
-        | (Some(_), Some(_), None) => Waypoint(EndNode)
-        | (Some(_), Some(_), Some(_)) =>
-          switch (tile.objects) {
-          | None => building
-          | Plant(_) => building
-          | c => c
-          }
-        }
-      };
-
-    setObjects(newState);
+let make = (~tile: Types.Grid.tile, ~neighbours: array(option(Types.Grid.tile)), ~onClick) => {
+  let handleClick = _event => {
+    onClick(tile);
   };
 
   let stateStyle =
-    switch (tile.state) {
-    | Path =>
-      let neighbours = Pathfinder.getNeighbours(~tiles, ~tile);
-      switch (neighbours[0], neighbours[1], neighbours[2], neighbours[3]) {
-      | (Some(north), Some(east), Some(south), Some(west)) =>
-        switch (north.state, east.state, south.state, west.state) {
-        // Endings
-        | (Path, Empty, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
-        | (Empty, Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
-        | (Empty, Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
-        | (Empty, Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+    tile.path.inPath
+      ? switch (neighbours[0], neighbours[1], neighbours[2], neighbours[3]) {
+        | (Some(north), Some(east), Some(south), Some(west)) =>
+          switch (north.path.inPath, east.path.inPath, south.path.inPath, west.path.inPath) {
+          // Endings
+          | (true, false, false, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+          | (false, true, false, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+          | (false, false, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+          | (false, false, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
 
-        // Straight Paths
-        | (Empty, Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/horizontal.png"))]))
-        | (Path, Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/vertical.png"))]))
+          // Straights
+          | (false, true, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/horizontal.png"))]))
+          | (true, false, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/vertical.png"))]))
 
-        // Turns
-        | (Path, Path, Empty, Empty) =>
-          Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
-        | (Empty, Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
-        | (Path, Empty, Empty, Path) =>
-          Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
-        | (Empty, Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
+          // Turns
+          | (true, true, false, false) =>
+            Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
+          | (false, false, true, true) =>
+            Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
+          | (true, false, false, true) =>
+            Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
+          | (false, true, true, false) =>
+            Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
 
-        // Junctions
-        | (Empty, Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_top.png"))]))
-        | (Path, Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_right.png"))]))
-        | (Path, Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_bottom.png"))]))
-        | (Path, Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/junction_left.png"))]))
+          // Junctions
+          | (false, true, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/junction_top.png"))]))
+          | (true, false, true, true) =>
+            Css.(style([backgroundImage(url("/images/path/dirt/junction_right.png"))]))
+          | (true, true, false, true) =>
+            Css.(style([backgroundImage(url("/images/path/dirt/junction_bottom.png"))]))
+          | (true, true, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/junction_left.png"))]))
 
-        // Surrounded by Path Fields
-        | (Path, Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/filled.png"))]))
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty, Empty, Empty) => ""
+          // Surrounded by paths
+          | (true, true, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/filled.png"))]))
+          // TODO: Surrounded by empty Fields
+          | (false, false, false, false) => ""
+          }
+        | (None, Some(east), Some(south), Some(west)) =>
+          switch (east.path.inPath, south.path.inPath, west.path.inPath) {
+          // Endings
+          | (true, false, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+          | (false, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+          | (false, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+          // Straight trues
+          | (true, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/horizontal.png"))]))
+
+          // Turns
+          | (false, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
+          | (true, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
+
+          // Junctions
+          | (true, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/junction_top.png"))]))
+          // TODO: Surrounded by empty Fields
+          | (false, false, false) => ""
+          }
+        | (Some(north), None, Some(south), Some(west)) =>
+          switch (north.path.inPath, south.path.inPath, west.path.inPath) {
+          // Endings
+          | (true, false, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+          | (false, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+          | (false, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+          // Straight trues
+          | (true, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/vertical.png"))]))
+
+          // Turns
+          | (false, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
+          | (true, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
+
+          // Junctions
+          | (true, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/junction_right.png"))]))
+
+          // TODO: Surrounded by empty Fields
+          | (false, false, false) => ""
+          }
+        | (Some(north), Some(east), None, Some(west)) =>
+          switch (north.path.inPath, east.path.inPath, west.path.inPath) {
+          // Endings
+          | (true, false, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+          | (false, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+          | (false, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+          // Straight trues
+          | (false, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/horizontal.png"))]))
+
+          // Turns
+          | (true, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
+          | (true, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
+
+          // Junctions
+          | (true, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/junction_bottom.png"))]))
+
+          // TODO: Surrounded by empty Fields
+          | (false, false, false) => ""
+          }
+        | (Some(north), Some(east), Some(south), None) =>
+          switch (north.path.inPath, east.path.inPath, south.path.inPath) {
+          // Endings
+          | (true, false, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+          | (false, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+          | (false, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+
+          // Straight trues
+          | (true, false, true) => Css.(style([backgroundImage(url("/images/path/dirt/vertical.png"))]))
+
+          // Turns
+          | (true, true, false) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
+          | (false, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
+
+          // Junctions
+          | (true, true, true) => Css.(style([backgroundImage(url("/images/path/dirt/junction_left.png"))]))
+
+          // TODO: Surrounded by empty Fields
+          | (false, false, false) => ""
+          }
+        | (Some(north), None, None, Some(west)) =>
+          switch (north.path.inPath, west.path.inPath) {
+          // Endings
+          | (true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+          | (false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+          // Turns
+          | (true, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
+
+          // TODO: Surrounded by empty Fields
+          | (false, false) => ""
+          }
+        | (Some(north), Some(east), None, None) =>
+          switch (north.path.inPath, east.path.inPath) {
+          // Endings
+          | (true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
+          | (false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+          // Turns
+          | (true, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
+
+          // TODO: Surrounded by empty Fields
+          | (false, false) => ""
+          }
+        | (None, Some(east), Some(south), None) =>
+          switch (east.path.inPath, south.path.inPath) {
+          // Endings
+          | (true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
+          | (false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+
+          // Turns
+          | (true, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
+
+          // TODO: Surrounded by empty Fields
+          | (false, false) => ""
+          }
+        | (None, None, Some(south), Some(west)) =>
+          switch (south.path.inPath, west.path.inPath) {
+          // Endings
+          | (true, false) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
+          | (false, true) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+
+          // Turns
+          | (true, true) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
+
+          // TODO: Surrounded by empty Fields
+          | (false, false) => ""
+          }
+        | _ => Css.(style([backgroundImage(url("/images/path/dirt/filled.png"))]))
         }
-      | (None, Some(east), Some(south), Some(west)) =>
-        switch (east.state, south.state, west.state) {
-        // Endings
-        | (Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
-        | (Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
-        | (Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
+      : "";
 
-        // Straight Paths
-        | (Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/horizontal.png"))]))
-
-        // Turns
-        | (Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
-        | (Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
-
-        // Junctions
-        | (Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_top.png"))]))
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty, Empty) => ""
-        }
-      | (Some(north), None, Some(south), Some(west)) =>
-        switch (north.state, south.state, west.state) {
-        // Endings
-        | (Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
-        | (Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
-        | (Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
-
-        // Straight Paths
-        | (Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/vertical.png"))]))
-
-        // Turns
-        | (Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
-        | (Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
-
-        // Junctions
-        | (Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_right.png"))]))
-
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty, Empty) => ""
-        }
-      | (Some(north), Some(east), None, Some(west)) =>
-        switch (north.state, east.state, west.state) {
-        // Endings
-        | (Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
-        | (Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
-        | (Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
-
-        // Straight Paths
-        | (Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/horizontal.png"))]))
-
-        // Turns
-        | (Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
-        | (Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
-
-        // Junctions
-        | (Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_bottom.png"))]))
-
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty, Empty) => ""
-        }
-      | (Some(north), Some(east), Some(south), None) =>
-        switch (north.state, east.state, south.state) {
-        // Endings
-        | (Path, Empty, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
-        | (Empty, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
-        | (Empty, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
-
-        // Straight Paths
-        | (Path, Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/vertical.png"))]))
-
-        // Turns
-        | (Path, Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
-        | (Empty, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
-
-        // Junctions
-        | (Path, Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/junction_left.png"))]))
-
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty, Empty) => ""
-        }
-      | (Some(north), None, None, Some(west)) =>
-        switch (north.state, west.state) {
-        // Endings
-        | (Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
-        | (Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
-
-        // Turns
-        | (Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_right_bottom.png"))]))
-
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty) => ""
-        }
-      | (Some(north), Some(east), None, None) =>
-        switch (north.state, east.state) {
-        // Endings
-        | (Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_bottom.png"))]))
-        | (Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
-        // Turns
-        | (Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_bottom_left.png"))]))
-
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty) => ""
-        }
-      | (None, Some(east), Some(south), None) =>
-        switch (east.state, south.state) {
-        // Endings
-        | (Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_left.png"))]))
-        | (Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
-
-        // Turns
-        | (Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_left_top.png"))]))
-
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty) => ""
-        }
-      | (None, None, Some(south), Some(west)) =>
-        switch (south.state, west.state) {
-        // Endings
-        | (Path, Empty) => Css.(style([backgroundImage(url("/images/path/dirt/end_top.png"))]))
-        | (Empty, Path) => Css.(style([backgroundImage(url("/images/path/dirt/end_right.png"))]))
-
-        // Turns
-        | (Path, Path) => Css.(style([backgroundImage(url("/images/path/dirt/turn_top_right.png"))]))
-
-        // TODO: Surrounded by Empty Fields
-        | (Empty, Empty) => ""
-        }
-      | _ => Css.(style([backgroundImage(url("/images/path/dirt/filled.png"))]))
-      };
-    | Empty => ""
-    };
-
-  <button className={Css.merge([Styles.mapTile, stateStyle])} onClick=handleStateChange>
-    {switch (tile.objects) {
-     | Tree(treeType) => <Tree treeType />
-     | Waypoint(waypointType) => <Waypoint waypointType />
-     | Plant(plantType) => <Plant plantType />
-     | None => React.null
+  <button className={Css.merge([Styles.mapTile, stateStyle])} onClick=handleClick>
+    {switch (tile.entity) {
+     | Tree(treeType) => <Object.Tree treeType />
+     | Waypoint(waypointType) => <Object.Waypoint waypointType />
+     | Plant(plantType) => <Object.Plant plantType />
+     | NoBuilding => React.null
      }}
   </button>;
 };

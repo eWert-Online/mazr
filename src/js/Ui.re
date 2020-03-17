@@ -1,3 +1,5 @@
+module Button = Ui_Button;
+
 module Styles = {
   open Css;
 
@@ -15,18 +17,22 @@ module Styles = {
 
 [@react.component]
 let make = () => {
-  let context = React.useContext(GameContext.context);
+  let (state, dispatch) = React.useContext(GameContext.context);
 
   let selectElement = element => {
-    context.setSelectedElement(_ => element);
+    dispatch(ActionTypes.SET_SELECTED_ELEMENT(element));
+  };
+
+  let spawnMob = mob => {
+    dispatch(ActionTypes.SPAWN_MOB(mob));
   };
 
   <div className=Styles.toolbar>
-    {switch (context.startNode, context.beacon, context.endNode) {
-     | (None, None, None) =>
-       <UiButton
+    {switch (state.grid.waypoints.startNode, state.grid.waypoints.beacon, state.grid.waypoints.endNode) {
+     | (None, _, _) =>
+       <Button
          active={
-           switch (context.startNode) {
+           switch (state.grid.waypoints.startNode) {
            | Some(_) => false
            | _ => true
            }
@@ -34,11 +40,11 @@ let make = () => {
          icon="/images/objects/hole.png"
          onClick={_ => ()}>
          "Startpunkt"->React.string
-       </UiButton>
-     | (Some(_), None, None) =>
-       <UiButton
+       </Button>
+     | (_, None, _) =>
+       <Button
          active={
-           switch (context.beacon) {
+           switch (state.grid.waypoints.beacon) {
            | Some(_) => false
            | _ => true
            }
@@ -46,11 +52,11 @@ let make = () => {
          icon="/images/objects/key.png"
          onClick={_ => ()}>
          "Wegpunkt"->React.string
-       </UiButton>
-     | (Some(_), Some(_), None) =>
-       <UiButton
+       </Button>
+     | (_, _, None) =>
+       <Button
          active={
-           switch (context.endNode) {
+           switch (state.grid.waypoints.endNode) {
            | Some(_) => false
            | _ => true
            }
@@ -58,12 +64,12 @@ let make = () => {
          icon="/images/objects/chest.png"
          onClick={_ => ()}>
          "Zielpunkt"->React.string
-       </UiButton>
-     | _ =>
+       </Button>
+     | (Some(startNode), Some(_beacon), Some(_endNode)) =>
        <React.Fragment>
-         <UiButton
+         <Button
            active={
-             switch (context.selectedElement) {
+             switch (state.ui.selectedElement) {
              | Types.Building(Tree(DarkGreen)) => true
              | _ => false
              }
@@ -71,10 +77,10 @@ let make = () => {
            icon="/images/objects/tree_darkgreen.png"
            onClick={_ => selectElement(Types.Building(Tree(DarkGreen)))}>
            "Baum"->React.string
-         </UiButton>
-         <UiButton
+         </Button>
+         <Button
            active={
-             switch (context.selectedElement) {
+             switch (state.ui.selectedElement) {
              | Sell => true
              | _ => false
              }
@@ -82,7 +88,13 @@ let make = () => {
            icon="/images/objects/gold.png"
            onClick={_ => selectElement(Types.Sell)}>
            "Verkaufen"->React.string
-         </UiButton>
+         </Button>
+         <Button
+           active=false
+           icon="/images/objects/skeleton.png"
+           onClick={_ => spawnMob(Mob_Skeleton.init(~coordinates=startNode))}>
+           "Skelett"->React.string
+         </Button>
        </React.Fragment>
      }}
   </div>;

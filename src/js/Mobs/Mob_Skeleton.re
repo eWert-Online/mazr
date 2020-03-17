@@ -39,10 +39,10 @@ module Styles = {
     ]);
 };
 
-type t = Types.mob;
+type t = Types.Mob.t;
 
 let init = (~coordinates) => {
-  let mob: t = {id: Js.Date.now(), coordinates, health: 100, speed: 500, typ: Types.Skeleton};
+  let mob: t = {id: Js.Date.now(), coordinates, health: 100, speed: 500, typ: Types.Mob.Skeleton};
   mob;
 };
 

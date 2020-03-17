@@ -8,5 +8,5 @@ let make = (~plantType: t) => {
     | HighGrass => Css.(style([backgroundImage(url("/images/objects/high_grass.png"))]))
     };
 
-  <div className={Css.merge([Objects_Generic.Styles.gameObject, plantType])} />;
+  <div className={Css.merge([Object_Styles.gameObject, plantType])} />;
 };
