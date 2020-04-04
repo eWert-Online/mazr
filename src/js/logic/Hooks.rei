@@ -1,1 +1,0 @@
-let useInterval: (unit => unit, int) => unit;

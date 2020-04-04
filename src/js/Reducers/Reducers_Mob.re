@@ -4,7 +4,7 @@ type t = array(Types.Mob.t);
 
 let initialState: t = [||];
 
-let make = (~state=initialState, ~action: ActionTypes.t) => {
+let make = (state: t, action: ActionTypes.t) => {
   switch (action) {
   | SPAWN_MOB(mob) => Belt.Array.concat(state, [|mob|])
   | DESPAWN_MOB(id) => Belt.Array.keep(state, mob => {mob.id !== id})
@@ -15,6 +15,17 @@ let make = (~state=initialState, ~action: ActionTypes.t) => {
       } else {
         mob;
       }
+    )
+  | MOVE_MOB_BULK(mobs) =>
+    Belt.Array.map(
+      state,
+      mob => {
+        let maybeMob = Js.Array.find(((id, _)) => id === mob.id, mobs);
+        switch (maybeMob) {
+        | Some((_, coordinates)) => {...mob, coordinates}
+        | None => mob
+        };
+      },
     )
   | _ => state
   };

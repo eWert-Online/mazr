@@ -2,11 +2,11 @@ open Types.Ui;
 
 type t = Types.Ui.t;
 
-let initialState: t = {selectedElement: Building(Tree(DarkGreen))};
+let initialState: t = {selectedElement: Object(Tree(DarkGreen)), gold: 100, wood: 80};
 
-let make = (~state=initialState, ~action: ActionTypes.t) => {
+let make = (state: t, action: ActionTypes.t) => {
   switch (action) {
-  | SET_SELECTED_ELEMENT(element) => {selectedElement: element}
+  | SET_SELECTED_ELEMENT(element) => {...state, selectedElement: element}
   | _ => state
   };
 };

@@ -1,0 +1,1 @@
+let useInterval = Hooks_Interval.use;
