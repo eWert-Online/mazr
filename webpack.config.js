@@ -65,31 +65,5 @@ module.exports = {
       { from: 'src/index.html' },
     ]),
   ],
-  module: {
-    rules: [
-      {
-        test: /\.bs\.js$/,
-        exclude: /(node_modules|bower_components)/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: [
-                [
-                  '@babel/preset-env',
-                  {
-                    modules: false,
-                    targets: {
-                      browsers: ['> 1%', 'last 2 versions', 'Firefox ESR', 'Opera 12.1', 'Safari 7', 'ie 9'],
-                    },
-                  },
-                ],
-              ],
-            },
-          },
-        ],
-      },
-    ],
-  },
   target: 'web',
 };

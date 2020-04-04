@@ -18,22 +18,17 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "bs-css": "^12.0.1",
-    "bs-css-emotion": "^1.0.1",
-    "react": "^16.8.1",
-    "react-dom": "^16.8.1",
-    "reason-react": ">=0.7.0",
-    "webpack": "^4.41.6",
+    "bs-css": "^12.1.0",
+    "bs-css-emotion": "^1.1.0",
+    "reason-react": "^0.7.0",
+    "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.6",
-    "@babel/preset-env": "^7.8.6",
-    "babel-loader": "^8.0.6",
-    "bs-platform": "^7.0.1",
+    "bs-platform": "^7.2.2",
     "concurrently": "^5.1.0",
     "copy-webpack-plugin": "^5.1.1",
-    "cross-env": "^7.0.0",
+    "cross-env": "^7.0.2",
     "rimraf": "^3.0.2",
     "webpack-dev-server": "^3.10.3"
   }
